@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencarian Asosiasi Kata</title>
+</head>
+<body>
+    <h2>Pencarian Asosiasi Makna Kata</h2>
+    <input type="text" id="kata" placeholder="Masukkan kata...">
+    <button onclick="cariKata()">Cari</button>
+    <p id="hasil"></p>
+
+    <script>
+        function cariKata() {
+            var kata = document.getElementById("kata").value;
+            var url = "https://script.google.com/macros/s/AKfycbwMogMH01chvYQ8BnYVFMtjBc0gWg54frGrLFVik6YHonECWx5Z7Oal1DJ5M0BTmTERkg/exec?kata=" + encodeURIComponent(kata);
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("hasil").innerText = 
+                        "Asosiasi: " + (data.asosiasi !== "Tidak ditemukan" ? data.asosiasi : "Kata tidak ditemukan");
+                });
+        }
+    </script>
+</body>
+</html>
