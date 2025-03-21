@@ -3,26 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pencarian Asosiasi Kata</title>
-</head>
-<body>
-    <h2>Pencarian Asosiasi Makna Kata</h2>
-    <input type="text" id="kata" placeholder="Masukkan kata...">
-    <button onclick="cariKata()">Cari</button>
-    <p id="hasil"></p>
-
+    <title>Pencarian Asosiasi Makna Kata</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 20px;
+            text-align: center;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+        }
+        #history, #favorites {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .clickable {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
+        }
+    </style>
     <script>
-        function cariKata() {
-            var kata = document.getElementById("kata").value;
-            var url = "https://script.google.com/macros/s/AKfycbwMogMH01chvYQ8BnYVFMtjBc0gWg54frGrLFVik6YHonECWx5Z7Oal1DJ5M0BTmTERkg/exec?kata=" + encodeURIComponent(kata);
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("hasil").innerText = 
-                        "Asosiasi: " + (data.asosiasi !== "Tidak ditemukan" ? data.asosiasi : "Kata tidak ditemukan");
-                });
+        let history = [];
+        let favorites = [];
+        
+        function searchWord() {
+            let input = document.getElementById("word").value.trim().toLowerCase();
+            google.script.run.withSuccessHandler(displayResult).getAssociations(input);
+        }
+        
+        function displayResult(result) {
+            document.getElementById("result").innerHTML = "Asosiasi: " + result;
+            let input = document.getElementById("word").value.trim();
+            if (input && !history.includes(input)) {
+                history.push(input);
+                updateHistory();
+            }
+        }
+        
+        function updateHistory() {
+            let historyDiv = document.getElementById("history");
+            historyDiv.innerHTML = "Histori Pencarian: " + history.map(word => `<span class='clickable' onclick='reSearch("${word}")'>${word}</span>`).join(", ");
+        }
+        
+        function reSearch(word) {
+            document.getElementById("word").value = word;
+            searchWord();
+        }
+        
+        function addToFavorites() {
+            let word = document.getElementById("word").value.trim();
+            if (word && !favorites.includes(word)) {
+                favorites.push(word);
+                updateFavorites();
+            }
+        }
+        
+        function updateFavorites() {
+            let favDiv = document.getElementById("favorites");
+            favDiv.innerHTML = "Kata Favorit: " + favorites.join(", ");
         }
     </script>
+</head>
+<body>
+    <h1>Pencarian Asosiasi Makna Kata</h1>
+    <input type="text" id="word" placeholder="Masukkan kata">
+    <button onclick="searchWord()">Cari</button>
+    <button onclick="addToFavorites()">Tambah ke Favorit</button>
+    <p id="result">Asosiasi: -</p>
+    <div id="history">Histori Pencarian: -</div>
+    <div id="favorites">Kata Favorit: -</div>
 </body>
 </html>
+
+// Apps Script backend
+to be placed in Google Apps Script
+
+function getAssociations(word) {
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Asosiasi Makna");
+    let data = sheet.getDataRange().getValues();
+    
+    for (let i = 1; i < data.length; i++) {
+        if (data[i][0].toLowerCase() === word.toLowerCase()) {
+            return data[i][1];
+        }
+    }
+    return "Tidak ditemukan.";
+}
