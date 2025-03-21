@@ -37,10 +37,20 @@
     <script>
         let history = [];
         let favorites = [];
-        
-        function searchWord() {
-            let input = document.getElementById("word").value.trim().toLowerCase();
-            google.script.run.withSuccessHandler(displayResult).getAssociations(input);
+        const scriptURL = https://script.google.com/macros/s/AKfycbwMogMH01chvYQ8BnYVFMtjBc0gWg54frGrLFVik6YHonECWx5Z7Oal1DJ5M0BTmTERkg/exec; // Ganti dengan URL Apps Script
+
+        async function searchWord() {
+            let input = document.getElementById("word").value.trim();
+            if (!input) return;
+
+            try {
+                let response = await fetch(`${scriptURL}?word=${encodeURIComponent(input)}`);
+                let data = await response.json();
+                displayResult(data.asosiasi);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                displayResult("Terjadi kesalahan.");
+            }
         }
         
         function displayResult(result) {
@@ -86,18 +96,3 @@
     <div id="favorites">Kata Favorit: -</div>
 </body>
 </html>
-
-// Apps Script backend
-to be placed in Google Apps Script
-
-function getAssociations(word) {
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Asosiasi Makna");
-    let data = sheet.getDataRange().getValues();
-    
-    for (let i = 1; i < data.length; i++) {
-        if (data[i][0].toLowerCase() === word.toLowerCase()) {
-            return data[i][1];
-        }
-    }
-    return "Tidak ditemukan.";
-}
